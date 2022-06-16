@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public GameObject gameOverCanvas;
+    public GameObject youWinCanvas;
 
     public void Start()
     {
@@ -30,9 +31,20 @@ public class GameManager : MonoBehaviour
         Invoke("End", 0.25f);
     }
 
+    public void YouWin()
+    {
+        Invoke("Win", 0.25f);
+    }
+
     private void End()
     {
         gameOverCanvas.SetActive(true);
+        Time.timeScale = 0;
+    }
+
+    private void Win()
+    {
+        youWinCanvas.SetActive(true);
         Time.timeScale = 0;
     }
 

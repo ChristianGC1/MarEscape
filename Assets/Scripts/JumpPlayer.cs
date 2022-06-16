@@ -12,14 +12,25 @@ public class JumpPlayer : MonoBehaviour
     public float gizmosFeetB;
 
     private bool isGrounded;
-    private Vector2 lastGroundedPos;
+    private Animator anim;
+    private Vector2 lastCheckPoint;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
+    public GameObject gameOverCanvas;
+    public GameManager gameManager;
     public LayerMask groundMask;
 
     public Vector2 lastClickedPos;
 
     public bool moving;
+
+    [Header("Jump Variables")]
+
+    public int maxJump = 20;
+
+    public int currentJump;
+
+    public JumpBar jumpBar;
 
     void Start()
     {
@@ -30,14 +41,14 @@ public class JumpPlayer : MonoBehaviour
     {
         FaceMouse();
 
-        //Invoke("ResetMove", 0.1f);
-
         isGrounded = Physics2D.OverlapBox(new Vector2(gameObject.transform.position.x, gameObject.transform.position.y - 0.5f), new Vector2(0.9f, 0.4f), 0f, groundMask);
-        
-        if (isGrounded)
-        {
-            lastGroundedPos = transform.position + new Vector3(0, 1, 0);
-        }
+
+        ManageJumpBar();
+
+        //if (isGrounded)
+        //{
+        //    lastCheckPoint = transform.position + new Vector3(0, 1, 0);
+        //}
 
         if (jumpValue == 0.0f && isGrounded)
         {
@@ -64,8 +75,7 @@ public class JumpPlayer : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.R))
         {
-            rb.velocity = Vector3.zero;
-            transform.position = lastGroundedPos;
+            LastCheckPoint();
         }
 
         if (Input.GetKeyUp(KeyCode.Mouse0))
@@ -75,7 +85,7 @@ public class JumpPlayer : MonoBehaviour
                 rb.velocity = new Vector2(walkSpeed, jumpValue);
                 lastClickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 moving = true;
-                jumpValue = 5f;
+                jumpValue = 8f;
             }
 
             if(moving && (Vector2)transform.position != lastClickedPos)
@@ -113,7 +123,7 @@ public class JumpPlayer : MonoBehaviour
     void ResetJump()
     {
         canJump = false;
-        jumpValue = 5;
+        jumpValue = 8;
     }
 
     void ResetMove()
@@ -124,8 +134,40 @@ public class JumpPlayer : MonoBehaviour
         }
     }
 
+    public void LastCheckPoint()
+    {
+        rb.velocity = Vector3.zero;
+        transform.position = lastCheckPoint;
+        Time.timeScale = 1;
+        gameOverCanvas.SetActive(false);
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(new Vector2(gameObject.transform.position.x, gameObject.transform.position.y - 0.5f), new Vector2(gizmosFeetA, gizmosFeetB));
+    }
+
+    void ManageJumpBar()
+    {
+        currentJump = Mathf.RoundToInt(jumpValue);
+        jumpBar.SetJump(currentJump);
+    }
+
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.gameObject.CompareTag("CheckPoint"))
+        {
+            lastCheckPoint = transform.position + new Vector3(0, 1, 0);
+        }
+
+        if (other.gameObject.CompareTag("Lose"))
+        {
+            gameManager.GameOver();
+        }
+
+        if (other.gameObject.CompareTag("Win"))
+        {
+            gameManager.YouWin();
+        }
     }
 }

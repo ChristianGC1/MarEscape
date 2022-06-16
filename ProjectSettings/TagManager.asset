@@ -7,6 +7,9 @@ TagManager:
   - Ladder
   - Platform
   - Ground
+  - Lose
+  - Win
+  - CheckPoint
   layers:
   - Default
   - TransparentFX
