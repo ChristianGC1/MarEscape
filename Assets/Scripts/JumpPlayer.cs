@@ -8,9 +8,13 @@ public class JumpPlayer : MonoBehaviour
     public float walkSpeed;
     public bool canJump;
     public float jumpValue = 0.0f;
+    public float gizmosFeetA;
+    public float gizmosFeetB;
 
     private bool isGrounded;
+    private Vector2 lastGroundedPos;
     private Rigidbody2D rb;
+    private SpriteRenderer sr;
     public LayerMask groundMask;
 
     public Vector2 lastClickedPos;
@@ -20,14 +24,20 @@ public class JumpPlayer : MonoBehaviour
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody2D>();
+        sr = gameObject.GetComponent<SpriteRenderer>();
     }
     void Update()
     {
         FaceMouse();
 
-        Invoke("ResetMove", 0.1f);
+        //Invoke("ResetMove", 0.1f);
 
         isGrounded = Physics2D.OverlapBox(new Vector2(gameObject.transform.position.x, gameObject.transform.position.y - 0.5f), new Vector2(0.9f, 0.4f), 0f, groundMask);
+        
+        if (isGrounded)
+        {
+            lastGroundedPos = transform.position + new Vector3(0, 1, 0);
+        }
 
         if (jumpValue == 0.0f && isGrounded)
         {
@@ -36,7 +46,7 @@ public class JumpPlayer : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Mouse0) && isGrounded && canJump)
         {
-            jumpValue += 0.1f;
+            jumpValue += 5.0f * 2.0f * Time.deltaTime;
         }
 
         if (Input.GetKeyDown(KeyCode.Mouse0) && isGrounded && canJump)
@@ -52,11 +62,17 @@ public class JumpPlayer : MonoBehaviour
             Invoke("ResetJump", 0.2f);
         }
 
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            rb.velocity = Vector3.zero;
+            transform.position = lastGroundedPos;
+        }
+
         if (Input.GetKeyUp(KeyCode.Mouse0))
         {
             if (isGrounded)
             {
-                rb.velocity = new Vector2(0.0f, jumpValue);
+                rb.velocity = new Vector2(walkSpeed, jumpValue);
                 lastClickedPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 moving = true;
                 jumpValue = 5f;
@@ -80,8 +96,18 @@ public class JumpPlayer : MonoBehaviour
         Vector3 mousePosition = Input.mousePosition;
         mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-        //Vector2 direction = new Vector2(mousePosition.x - transform.position.x, mousePosition.y - transform.position.y);
-        //transform.right = direction;
+        if (mousePosition.x > transform.position.x)
+        {
+            //Player faces right
+            walkSpeed = 5;
+            sr.flipX = false;
+        }
+        else
+        {
+            //Player faces left
+            walkSpeed = -5;
+            sr.flipX = true;
+        }
     }
 
     void ResetJump()
@@ -96,6 +122,10 @@ public class JumpPlayer : MonoBehaviour
         {
             rb.velocity = Vector3.zero;
         }
+    }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(new Vector2(gameObject.transform.position.x, gameObject.transform.position.y - 0.5f), new Vector2(gizmosFeetA, gizmosFeetB));
     }
 }
