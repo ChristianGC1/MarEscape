@@ -18,6 +18,11 @@ public class GameManager : MonoBehaviour
         {
             doExitGame();
         }
+
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            Replay();
+        }
     }
 
     public void doExitGame()
